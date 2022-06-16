@@ -9,65 +9,18 @@
 
 import './style.css';
 
-
-let listItems = []
 const addBtn = document.querySelector('#addBtn')
 addBtn.onclick = showForm
-
-const pageData = (() => {
-    let notesData = [];
-    let id = 0;
-    const addNote = (item) => {
-        item.dataId = id
-        notesData.push(item)
-        console.log(notesData)
-        id++;
-    }
-    const getNotes = () => notesData
-
-    return {addNote, getNotes}
-})();
-
-function showForm (event) {
-    buildForm.appendItems(questionItems.getNames() , questionItems.getClasses(), questionItems.getNodes(), questionItems.getTypes())
-    document.body.appendChild(buildForm.container)
-    event.preventDefault();
-    return
-}
-
-function addToPage (container) {
-    if(!listItems) {
-        warnEmptyList(container)
-    }
-    return
-}
-
-function warnEmptyList(container) {
-    container.innerHTML = '<p id="warnEmpty">Nothing to Track!</p>'
-    return
-}
-
-const questionItems = (() => {
-    let formItems = []
-    const addFormItem = (...items) => {
-        items.forEach(item => formItems.push(item))
-    }
-    const getNodes = () => formItems.map(item => item.node)
-    const getNames = () => formItems.map(item => item.name)
-    const getClasses = () => formItems.map(item => item.id)
-    const getTypes = () => formItems.map(item => item.type)
-    return {formItems, addFormItem, getNodes, getNames, getClasses, getTypes}
-})();
 
 const buildForm = (() => {
     const container = document.createElement('div')
     container.setAttribute('id', 'formContainer')
     let formArea;
 
-    // formArea.setAttribute('onsubmit', 'return false')
-
+    
     const appendItems = (names, ids, nodes, types) => {
         formArea = document.createElement('form')
+        // formArea.setAttribute('onsubmit', 'return false')
         formArea.setAttribute('action' , '')
         formArea.setAttribute('id', 'form')
         for(let i = 0; i < nodes.length; i++) {
@@ -93,14 +46,69 @@ const buildForm = (() => {
 })();
 
 
+function showForm (event) {
+    buildForm.appendItems(questionItems.getNames() , questionItems.getClasses(), questionItems.getNodes(), questionItems.getTypes())
+    document.body.appendChild(buildForm.container)
+    event.preventDefault();
+    return
+}
+
 function submitItems(event) {
     const formData = new FormData(event.target)
     let data = Object.fromEntries(formData)
     pageData.addNote(data)
+    console.log(data)
+    addToPage(document.body, data.title, data.desc, data.dueD, data.priority, data.dataId)
     event.preventDefault();
     document.body.removeChild(buildForm.container)
     return
 }
+
+function createNote (title, desc, date, priority, id) {
+    let noteCard = document.createElement('div')
+    let noteTitle = document.createElement('h2')
+    noteTitle.innerText = `${title}`
+    let noteDesc = document.createElement('p')
+    noteDesc.innerText = `${desc}`
+    let noteDate = document.createElement('p')
+    noteDate.innerText = `${date}`
+    let notePrio = document.createElement('p')
+    notePrio.innerText = `${priority}`
+    noteCard.appendChild(noteTitle)
+    noteCard.appendChild(noteDesc)
+    noteCard.appendChild(noteDate)
+    noteCard.appendChild(notePrio)
+    noteCard.setAttribute('id', `card${id}`)
+    return noteCard
+}
+
+function addToPage (container, title, desc, date, priority, id) {
+    // if(!item) {
+    //     warnEmptyList(container)
+    // }
+    let note = createNote(title, desc, date, priority, id)
+    container.appendChild(note)
+    return
+}
+
+// function warnEmptyList(container) {
+//     container.innerHTML = '<p id="warnEmpty">Nothing to Track!</p>'
+//     return
+// }
+
+const pageData = (() => {
+    let notesData = [];
+    let id = 0;
+    const addNote = (item) => {
+        item.dataId = id
+        notesData.push(item)
+        console.log(notesData)
+        id++;
+    }
+    const getNotes = () => notesData
+
+    return {addNote, getNotes}
+})();
 
 function createBtn(type, name) {
     let btn = document.createElement('button')
@@ -109,6 +117,19 @@ function createBtn(type, name) {
     btn.innerText = name
     return btn
 }
+
+const questionItems = (() => {
+    let formItems = []
+    const addFormItem = (...items) => {
+        items.forEach(item => formItems.push(item))
+    }
+    const getNodes = () => formItems.map(item => item.node)
+    const getNames = () => formItems.map(item => item.name)
+    const getClasses = () => formItems.map(item => item.id)
+    const getTypes = () => formItems.map(item => item.type)
+    return {formItems, addFormItem, getNodes, getNames, getClasses, getTypes}
+})();
+
 
 const title = {
     name: 'Title',
