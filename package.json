@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "webpack",
-    "serve": "webpack serve --open"
+    "serve": "webpack serve --open",
+    "sass": "sass ./src/style.scss ./src/style.css"
   },
   "repository": {
     "type": "git",
@@ -20,9 +21,14 @@
   "homepage": "https://github.com/xcheesee/TodoList#readme",
   "devDependencies": {
     "css-loader": "^6.7.1",
+    "sass": "^1.52.3",
     "style-loader": "^3.3.1",
+    "vanillajs-datepicker": "^1.2.0",
     "webpack": "^5.73.0",
     "webpack-cli": "^4.10.0",
     "webpack-dev-server": "^4.9.2"
+  },
+  "dependencies": {
+    "date-fns": "^2.28.0"
   }
 }

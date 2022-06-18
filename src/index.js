@@ -7,87 +7,97 @@
 // DRY - DONT REPEAT YOURSELF
 
 import './style.css';
+import isValid from 'date-fns/isValid'
+import isPast from 'date-fns/isPast'
+import Datepicker from 'vanillajs-datepicker/Datepicker';
+import { ka } from 'date-fns/locale';
 
+const mainPage = document.querySelector('.mainPage')
+const cardContainer = document.querySelector('.cardContainer')
 const addBtn = document.querySelector('#addBtn')
+const projBtn = document.querySelector('#projBtn')
 addBtn.onclick = showForm
+// projBtn.onclick = showProjForm
 
-function showForm (event) {
-    buildForm.appendFormQuestions(questionItems.getNames() , questionItems.getClasses(), questionItems.getTypes(), questionItems.getTags(), questionItems.getOptions())
-    document.body.appendChild(buildForm.container)
+function showForm(event) {
+    
+    buildForm.appendFormQuestions(questionItems.formItems)
+    mainPage.appendChild(buildForm.container)
+    
+    const datepicker = new Datepicker(document.querySelector('#dueD'), {
+        autohide: true,
+        format: 'dd/mm/yyyy'
+    })
+    
     event.preventDefault();
     return
 }
+
+// function showProjForm(event) {
+// }
 
 const buildForm = (() => {
     const container = document.createElement('div')
     container.setAttribute('id', 'formContainer')
     let formArea;
 
-    const appendFormQuestions = (names, ids, types, tags, options) => {
-        formArea = document.createElement('form')
-        formArea.setAttribute('onsubmit', 'return false') //for debuging porpuses
-        formArea.setAttribute('action' , '')
-        formArea.setAttribute('id', 'form')
+    // const appendProjectForm = () => {
+    //     formArea = makeDomObject.makeForm();
+    // }
 
-        for(let i = 0; i < ids.length; i++) {
-            let node;
-            if(tags[i] === 'select') {
-                node = makeDomObject.makeSelect(tags[i], types[i], names[i], ids[i], options[i])
+    const appendFormQuestions = (questions) => {
+        formArea = makeDomObject.makeForm();
+        let node;
+
+        for(let question of questions) {
+            if(question.tag === 'select') {
+                node = makeDomObject.makeSelect(question)
             }
-            else if(tags[i] === 'input') {
-                node = makeDomObject.makeInput(tags[i], types[i], names[i], ids[i])
+            else if(question.tag === 'input') {
+                node = makeDomObject.makeInput(question)
             }
-            let label = document.createElement('label')
-            label.setAttribute('for', `${ids[i]}`)
-            label.innerText = `${names[i]}`
+            let label = makeDomObject.makeLabel(question)
             addToPage(formArea, label, node)
         }
 
-        let submitBtn = createBtn('submit', 'Submit')
         formArea.addEventListener('submit', submitFormQuestions)
-
-        addToPage(formArea, submitBtn, createBtn('reset', 'Clear'))
-        addToPage(container, formArea)
+        addToPage(formArea, makeDomObject.makeBtn('submit', 'Submit'), makeDomObject.makeBtn('reset', 'Clear'))
+        return addToPage(container, formArea)
     }
 
     return {container, appendFormQuestions}
 })();
 
 function submitFormQuestions(event) {
+    
+    // console.log(event.target.dueD.value)
     const formData = new FormData(event.target)
     let data = Object.fromEntries(formData)
-
-    if (data.title == '' && data.desc == '') {
+    
+    if (!isFormValid(data)) {
         return
     }
     
     pageData.addNote(data)
-    console.log(Object.entries(data))
-    let note = makeDomObject.makeNote(Object.entries(data), data.dataId)
-    document.body.appendChild(note)
-    event.preventDefault();
+    // console.log(data)
+    cardContainer.appendChild(makeDomObject.makeNote(data))
     buildForm.container.removeChild(document.querySelector('form'))
-    document.body.removeChild(buildForm.container)
+    mainPage.removeChild(buildForm.container)
+
+    event.preventDefault();
     return
 }
 
 function addToPage (container, ...childNodes) {
-    // if(!item) {
-    //     warnEmptyList(container)
+    // for(let node of childNodes) {
+    //     container.appendChild(node)
     // }
-    for(let node of childNodes) {
-        container.appendChild(node)
-    }
-    return
+    return childNodes.forEach(node => container.appendChild(node))
 }
-
-// function warnEmptyList(container) {
-//     container.innerHTML = '<p id="warnEmpty">Nothing to Track!</p>'
-//     return
-// }
 
 const pageData = (() => {
     let notesData = [];
+    let projectsData = [];
     let id = 0;
 
     const addNote = (item) => {
@@ -96,41 +106,41 @@ const pageData = (() => {
         id++;
     }
 
+    /* const addProj = (proj) => {
+    }*/
+
     const getNotes = () => notesData
 
     return {addNote, getNotes}
 })();
 
-const createBtn = (type, name) => {
-    let btn = document.createElement('button')
-    btn.setAttribute('type', type)
-    btn.setAttribute('id', type)
-    btn.innerText = name
-    return btn
-}
-
 const questionItems = (() => {
     let formItems = []
+    let projItems = []
 
     const addFormItem = (...items) => {
         items.forEach(item => formItems.push(item))
     }
-    const getNames = () => formItems.map(item => item.name)
-    const getClasses = () => formItems.map(item => item.id)
-    const getTypes = () => formItems.map(item => item.type)
-    const getTags = () => formItems.map(item => item.tag)
-    const getOptions = () => formItems.map(item => item.options)
-    return {formItems, addFormItem, getNames, getClasses, getTypes, getTags, getOptions}
+
+    const addProjItem = (...items) => {
+        items.forEach(item => projItems.push(item))
+    }
+    // const getNames = () => formItems.map(item => item.name)
+    // const getClasses = () => formItems.map(item => item.id)
+    // const getTypes = () => formItems.map(item => item.type)
+    // const getTags = () => formItems.map(item => item.tag)
+    // const getOptions = () => formItems.map(item => item.options)
+    return {formItems, projItems, addFormItem, addProjItem}
 })();
 
 const makeDomObject = (() => {
     let node;
 
-    const makeSelect = (tag, type, name, id, options) => {
+    const makeSelect = ({tag, id, options}) => {
         node = document.createElement(`${tag}`)
         node.setAttribute('id',`${id}`)
         node.setAttribute('name', `${id}`)
-        node.setAttribute('type', `${type}`)
+        node.setAttribute('autocomplete', 'off')
 
         for(let option of options) {
             let opNode = document.createElement('option')
@@ -142,35 +152,69 @@ const makeDomObject = (() => {
         return node
     }
 
-    const makeInput = (tag, type, name, id) => {
+    const makeInput = ({tag, type, id}) => {
         node = document.createElement(`${tag}`)
         node.setAttribute('id',`${id}`)
         node.setAttribute('name', `${id}`)
         node.setAttribute('type', `${type}`)
+        node.setAttribute('autocomplete', 'off')
 
         return node
     }
 
-    const makeNote = (formArray, formId) => {
+    const makeNote = ({title, desc, dueD, priority, dataId}) => {
         node = document.createElement('div')
-        let nodeChildren = []
+        node.setAttribute('id', `card${dataId}`)
+        node.classList.add('card')
 
-        for(let array of formArray) {
-            if(array[0] === 'dataId') {
-                continue
-            }
-            let note = document.createElement('p')
-            note.classList.add(`${array[0]}`)
-            note.innerText = `${array[1]}`
-            nodeChildren.push(note)
-        }
+        const t = document.createElement('h2')
+        t.setAttribute('id', 'cardTitle')
+        t.innerText = `${title}`
 
-        addToPage(node, ...nodeChildren)
-        node.setAttribute('id', `card${formId}`)
+        const d = document.createElement('p')
+        d.setAttribute('id', 'cardDesc')
+        d.innerText = `${desc}`
+
+        const date = document.createElement('p')
+        date.setAttribute('id', `cardDate`)
+        date.innerText = `${dueD}`
+
+        const prio = document.createElement('p')
+        prio.setAttribute('id', 'cardPrio')
+        prio.innerText = `${priority} priority`
+        addToPage(node, t, d, date, prio)
 
         return node
     }
-    return {makeSelect, makeInput, makeNote, node}
+
+
+
+    const makeForm = () => {
+        let form = document.createElement('form')
+        form.setAttribute('onsubmit', 'return false') //for debuging porpuses
+        form.setAttribute('action' , '')
+        form.setAttribute('id', 'form')
+        return form
+    }
+
+    const makeLabel = ({name, id}) => {
+        let label = document.createElement('label')
+        label.setAttribute('for', `${id}`)
+        label.innerText = `${name}`
+        label.classList.add(`${id}Label`)
+        return label
+    }
+
+
+    const makeBtn = (type, name) => {
+        node = document.createElement('button')
+        node.setAttribute('type', type)
+        node.setAttribute('id', type)
+        node.innerText = name
+        return node
+    }
+
+    return {makeSelect, makeInput, makeNote, makeBtn, makeForm, makeLabel, node}
 })();
 
 const createQuestion = (() => {
@@ -179,31 +223,63 @@ const createQuestion = (() => {
     const text = (name, id) => {
         question = {};
         question.tag = 'input'
-        question.type = 'text'
+        question.type = ''
         question.name = name
         question.id = id
-        questionItems.addFormItem(question)
-        return
+        return question
+        // return questionItems.addFormItem(question)
     }
 
     const select = (name, id, options) => {
         question = {};
         question.tag = 'select'
-        question.type = ''
         question.name = name
         question.id = id
         question.options = options
-        questionItems.addFormItem(question)
-        return
+        return question
+        // return questionItems.addFormItem(question)
     }
 
     return {text, select}
 })();
 
-createQuestion.text('Title', 'title')
-createQuestion.text('Description', 'desc')
-createQuestion.text('Due Date', 'dueD')
-createQuestion.text('Test', 'test')
-createQuestion.select('Priority', 'priority', ['low', 'medium', 'high'])
+function isFormValid({title, desc, dueD}) {
+    let [day, month, year] = dueD.split('/')
+    month--;
+    //23:59:59 to be able to define note for same day
+    let fDate = new Date(year, month , day, 23, 59, 59)
+    console.log(fDate)
 
+    if(title === '') {
+        let title = document.querySelector('#title')
+        title.classList.add('failTitle')
+        return false
+    }
+    else if(desc === '') {
+        let desc = document.querySelector('#desc')
+        desc.classList.add('failDesc')
+        return false
+    }
+    else if(!isValid(fDate)) {
+        let d = document.querySelector('#dueD')
+        d.classList.remove('pastDate')
+        d.classList.add('blankDate')
+        return false
+    }
+    else if(isPast(fDate)) {
+        let d = document.querySelector('#dueD')
+        d.classList.remove('blankDate')
+        d.classList.add('pastDate')
+        return false
+    }
+
+    return true
+}
+
+questionItems.addFormItem(createQuestion.text('Title', 'title'))
+questionItems.addFormItem(createQuestion.text('Description', 'desc'))
+questionItems.addFormItem(createQuestion.text('Due Date', 'dueD'))
+questionItems.addFormItem(createQuestion.select('Priority', 'priority', ['Low', 'Medium', 'High']))
+questionItems.addProjItem(createQuestion.text('Name', 'name'))
+// createQuestion.select('Project', 'project', ['Default', 'Daphe', 'Nanan'])
 console.log(questionItems.formItems)
