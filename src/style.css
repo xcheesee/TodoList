@@ -275,7 +275,7 @@
   z-index: 1;
 }
 
-#form {
+form {
   position: fixed;
   top: 50%;
   left: 50%;
@@ -299,6 +299,7 @@
   display: grid;
   grid-area: sidebar;
   grid-template-columns: 1fr 1fr;
+  align-items: center;
 }
 
 .cardContainer {

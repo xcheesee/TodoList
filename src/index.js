@@ -14,14 +14,14 @@ import { ka } from 'date-fns/locale';
 
 const mainPage = document.querySelector('.mainPage')
 const cardContainer = document.querySelector('.cardContainer')
-const addBtn = document.querySelector('#addBtn')
+const addBtn = document.querySelector('#notesBtn')
 const projBtn = document.querySelector('#projBtn')
-addBtn.onclick = showForm
-// projBtn.onclick = showProjForm
+addBtn.onclick = showNotesForm
+projBtn.onclick = showProjForm
 
-function showForm(event) {
+function showNotesForm(event) {
     
-    buildForm.appendFormQuestions(questionItems.formItems)
+    buildForm.appendFormQuestions(questionItems.formItems, 'noteForm')
     mainPage.appendChild(buildForm.container)
     
     const datepicker = new Datepicker(document.querySelector('#dueD'), {
@@ -33,8 +33,12 @@ function showForm(event) {
     return
 }
 
-// function showProjForm(event) {
-// }
+function showProjForm(event) {
+    buildForm.appendFormQuestions(questionItems.projItems, 'projForm')
+    mainPage.appendChild(buildForm.container)
+    event.preventDefault();
+    return
+}
 
 const buildForm = (() => {
     const container = document.createElement('div')
@@ -45,8 +49,8 @@ const buildForm = (() => {
     //     formArea = makeDomObject.makeForm();
     // }
 
-    const appendFormQuestions = (questions) => {
-        formArea = makeDomObject.makeForm();
+    const appendFormQuestions = (questions, type) => {
+        formArea = makeDomObject.makeForm(type);
         let node;
 
         for(let question of questions) {
@@ -70,19 +74,27 @@ const buildForm = (() => {
 
 function submitFormQuestions(event) {
     
-    // console.log(event.target.dueD.value)
+    const formType = event.target.id
     const formData = new FormData(event.target)
     let data = Object.fromEntries(formData)
-    
-    if (!isFormValid(data)) {
-        return
+    if(formType === 'noteForm' ){
+        if (!isFormValid(data)) {
+            return
+        }
+        
+        pageData.addNote(data)
+        // console.log(formType)
+        cardContainer.appendChild(makeDomObject.makeNote(data))
+        buildForm.container.removeChild(document.querySelector('form'))
+        mainPage.removeChild(buildForm.container)
     }
-    
-    pageData.addNote(data)
-    // console.log(data)
-    cardContainer.appendChild(makeDomObject.makeNote(data))
-    buildForm.container.removeChild(document.querySelector('form'))
-    mainPage.removeChild(buildForm.container)
+    else if(formType === 'projForm') {
+        pageData.addProj(data)
+        //need to attach project name to page
+        console.log(pageData.getProjs())
+        buildForm.container.removeChild(document.querySelector('form'))
+        mainPage.removeChild(buildForm.container)
+    }
 
     event.preventDefault();
     return
@@ -106,12 +118,14 @@ const pageData = (() => {
         id++;
     }
 
-    /* const addProj = (proj) => {
-    }*/
+    const addProj = (proj) => {
+        projectsData.push(proj)
+    }
 
     const getNotes = () => notesData
+    const getProjs = () => projectsData.map(project => project.name)
 
-    return {addNote, getNotes}
+    return {addNote, getNotes, addProj, getProjs}
 })();
 
 const questionItems = (() => {
@@ -182,6 +196,7 @@ const makeDomObject = (() => {
         const prio = document.createElement('p')
         prio.setAttribute('id', 'cardPrio')
         prio.innerText = `${priority} priority`
+        
         addToPage(node, t, d, date, prio)
 
         return node
@@ -189,11 +204,11 @@ const makeDomObject = (() => {
 
 
 
-    const makeForm = () => {
+    const makeForm = (type) => {
         let form = document.createElement('form')
         form.setAttribute('onsubmit', 'return false') //for debuging porpuses
         form.setAttribute('action' , '')
-        form.setAttribute('id', 'form')
+        form.setAttribute('id', `${type}`)
         return form
     }
 
@@ -281,5 +296,5 @@ questionItems.addFormItem(createQuestion.text('Description', 'desc'))
 questionItems.addFormItem(createQuestion.text('Due Date', 'dueD'))
 questionItems.addFormItem(createQuestion.select('Priority', 'priority', ['Low', 'Medium', 'High']))
 questionItems.addProjItem(createQuestion.text('Name', 'name'))
-// createQuestion.select('Project', 'project', ['Default', 'Daphe', 'Nanan'])
+questionItems.addFormItem(createQuestion.select('Project', 'project', pageData.getProjs()))//move addFormItem to appendForm
 console.log(questionItems.formItems)
