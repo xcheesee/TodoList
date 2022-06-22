@@ -265,7 +265,8 @@
   grid-area: header;
 }
 
-#formContainer {
+#formContainer, .formWrapper {
+  display: none;
   position: fixed;
   left: 0;
   top: 0;
@@ -275,7 +276,7 @@
   z-index: 1;
 }
 
-form {
+#nForm, #pForm {
   position: fixed;
   top: 50%;
   left: 50%;
@@ -304,6 +305,14 @@ form {
 
 .cardContainer {
   grid-area: card;
+}
+
+.showForm {
+  display: block !important;
+}
+
+.formTitle {
+  grid-column: 1/-1;
 }
 
 /*# sourceMappingURL=style.css.map */
