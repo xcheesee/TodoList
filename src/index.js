@@ -24,6 +24,7 @@ const nForm = document.querySelector('#nForm')
 const pForm = document.querySelector('#pForm')
 nForm.addEventListener('submit', submitNoteQuestions)
 pForm.addEventListener('submit', submitProjsQuestions)
+let currCardContainer;
 
 const datepicker = new Datepicker(document.querySelector('#date'), {
     autohide: true,
@@ -55,8 +56,10 @@ function submitNoteQuestions(event) {
     
     pageData.addNote(data)
     makeDomObject.updateProjTabEle(data.proj)
-    cardContainer.appendChild(makeDomObject.makeNote(data))
-
+    // cardContainer.appendChild(makeDomObject.makeNote(data))
+    if(currCardContainer == data.proj) {
+        showProjectNotes(data.proj)
+    }
     notesForm.classList.toggle('showForm')
     event.preventDefault();
     event.target.reset()
@@ -68,6 +71,7 @@ function submitProjsQuestions(event) {
     const formData = new FormData(event.target)
     let data = Object.fromEntries(formData)
     console.log(data)
+    if(pageData.duplicateProj(data.name)) return
     pageData.addProj(data)
     addToPage(projSidebar, makeDomObject.makeProjTabEle(data.name))
     projsForm.classList.toggle('showForm')
@@ -94,13 +98,13 @@ const pageData = (() => {
 
     const addNote = (item) => {
         item.dataId = noteId
-        projectsData[item.proj].toDos
-            .push(item)
+        projectsData[item.proj].toDos.push(item)
         console.log(item, projectsData)
         noteId++;
     }
 
     const addProj = (proj) => {
+        if(projectsData[proj.name]) return false
         projectsData[proj.name] = {
             name: proj.name,
             toDos: [],
@@ -109,6 +113,7 @@ const pageData = (() => {
         projId++;
         console.log(projectsData)
         console.log(getProjs())
+        return true
     }
 
     const getNotes = () => notesData
@@ -123,7 +128,17 @@ const pageData = (() => {
 
     const getProjNotes = (proj) => projectsData[proj].toDos
 
-    return {addNote, getNotes, addProj, getProjs, getProjNotes}
+    const getProjData = (proj) => projectsData[proj]
+
+    const duplicateProj = (proj) => {
+        if(projectsData[proj]) {
+            return true
+            //add error message
+        }
+        return false
+    }
+
+    return {addNote, getNotes, addProj, getProjs, getProjNotes, duplicateProj, getProjData}
 })();
 
 const makeDomObject = (() => {
@@ -169,6 +184,7 @@ const makeDomObject = (() => {
         let sidebarEle = document.createElement('p')
         sidebarEle.setAttribute('id', `${projectName}`)
         sidebarEle.innerText = `${projectName}--------${pageData.getProjNotes(projectName).length}`
+        sidebarEle.addEventListener('click', getProjectNotes)
         return sidebarEle
     }
 
@@ -180,8 +196,7 @@ const makeDomObject = (() => {
 
     const initSidebar = () => {
         for(let proj of pageData.getProjs()) {
-        console.log(proj)
-        addToPage(document.querySelector('.sidebar'), makeProjTabEle(proj))
+            addToPage(document.querySelector('.sidebar'), makeProjTabEle(proj))
         }
         return
     }
@@ -232,6 +247,24 @@ function clearPage(element) {
     while(element.firstChild) {
        element.removeChild(element.firstChild)
     }
+}
+
+function getProjectNotes(event) {
+    const project = event.target.id
+    currCardContainer = project
+    showProjectNotes(project)
+}
+
+function showProjectNotes(data) {
+    const projectData = pageData.getProjData(data)
+    const container = document.querySelector('.cardContainer')
+    const projCont = document.createElement('div')
+    projCont.setAttribute('id', `${data}Container`)
+    projCont.innerText = `${data} Project`
+    projectData.toDos.forEach(obj => addToPage(projCont, makeDomObject.makeNote(obj)))
+    clearPage(container)
+    container.appendChild(projCont)
+
 }
 
 makeDomObject.initSidebar()
