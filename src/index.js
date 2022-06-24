@@ -31,18 +31,18 @@ const datepicker = new Datepicker(document.querySelector('#date'), {
     format: 'dd/mm/yyyy'
 })
 
-function showNotesForm() {
+function showNotesForm () {
     attachProjs(pageData.getProjs())
     notesForm.classList.toggle('showForm')
     return
 }
 
-function showProjForm() {
+function showProjForm () {
     projsForm.classList.toggle('showForm')
     return
 }
 
-function attachProjs(projObjValues) {
+function attachProjs (projObjValues) {
     const projSelect = document.querySelector('#projSelect')
     clearPage(projSelect)
     let projDomValues = makeDomObject.makeOptions(projObjValues)
@@ -50,7 +50,7 @@ function attachProjs(projObjValues) {
     return
 }
 
-function submitNoteQuestions(event) {
+function submitNoteQuestions (event) {
     const formData = new FormData(event.target)
     let data = Object.fromEntries(formData)
     
@@ -66,7 +66,7 @@ function submitNoteQuestions(event) {
     return
 }
 
-function submitProjsQuestions(event) {
+function submitProjsQuestions (event) {
     const projSidebar = document.querySelector('.sidebar')
     const formData = new FormData(event.target)
     let data = Object.fromEntries(formData)
@@ -131,7 +131,7 @@ const pageData = (() => {
     const getProjData = (proj) => projectsData[proj]
 
     const duplicateProj = (proj) => {
-        if(projectsData[proj]) {
+        if (projectsData[proj]) {
             return true
             //add error message
         }
@@ -204,7 +204,7 @@ const makeDomObject = (() => {
     return {makeNote, makeOptions, makeProjTabEle, updateProjTabEle, initSidebar}
 })();
 
-function isFormValid({title, desc, dueD}) {
+function isFormValid ({title, desc, dueD}) {
     let [day, month, year] = dueD.split('/')
     month--;
     //23:59:59 to be able to define note for same day
@@ -215,19 +215,16 @@ function isFormValid({title, desc, dueD}) {
         let title = document.querySelector('#title')
         title.classList.add('failTitle')
         return false
-    }
-    else if(desc === '') {
+    } else if (desc === '') {
         let desc = document.querySelector('#desc')
         desc.classList.add('failDesc')
         return false
-    }
-    else if(!isValid(fDate)) {
+    } else if (!isValid(fDate)) {
         let d = document.querySelector('#dueD')
         d.classList.remove('pastDate')
         d.classList.add('blankDate')
         return false
-    }
-    else if(isPast(fDate)) {
+    } else if (isPast(fDate)) {
         let d = document.querySelector('#dueD')
         d.classList.remove('blankDate')
         d.classList.add('pastDate')
@@ -237,25 +234,25 @@ function isFormValid({title, desc, dueD}) {
     return true
 }
 
-function capitalized(value) {
+function capitalized (value) {
     let str = value
     let str2 = str.charAt(0).toUpperCase() + str.slice(1);
     return str2
 }
 
-function clearPage(element) {
-    while(element.firstChild) {
+function clearPage (element) {
+    while (element.firstChild) {
        element.removeChild(element.firstChild)
     }
 }
 
-function getProjectNotes(event) {
+function getProjectNotes (event) {
     const project = event.target.id
     currCardContainer = project
     showProjectNotes(project)
 }
 
-function showProjectNotes(data) {
+function showProjectNotes (data) {
     const projectData = pageData.getProjData(data)
     const container = document.querySelector('.cardContainer')
     const projCont = document.createElement('div')
