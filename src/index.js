@@ -10,6 +10,7 @@ import './style.css';
 // import isValid from 'date-fns/isValid';
 // import isPast from 'date-fns/isPast';
 import Datepicker from 'vanillajs-datepicker/Datepicker';
+// import { eachMonthOfInterval } from 'date-fns';
 // import { ka } from 'date-fns/locale';
 
 const notesForm = document.querySelector('.nFormWrapper');
@@ -18,7 +19,7 @@ const addBtn = document.querySelector('#notesBtn');
 const projBtn = document.querySelector('#projBtn');
 const nForm = document.querySelector('#nForm');
 const pForm = document.querySelector('#pForm');
-let currCardContainer;
+let currCardContainer = 'default';
 
 // eslint-disable-next-line no-unused-vars
 const datepicker = new Datepicker(document.querySelector('#date'), {
@@ -47,8 +48,9 @@ function attachProjs (projObjValues) {
 
 function addNote (event) {
     event.preventDefault();
-
     let data = Object.fromEntries(new FormData(event.target));
+
+    if(!checkForm(event)) return
 
     pageData.addNote(data)
       .then(makeDomObject.updateProjTabEle);
@@ -62,12 +64,13 @@ function addNote (event) {
 
 function addProject (event) {
     event.preventDefault();
-
+    console.log(event.target.id)
     if (pageData.duplicateProj(event.target.name.value)) {
         projsForm.classList.toggle('showForm');
         event.target.reset();
         return;
     }
+    // checkForm(event)
 
     const projSidebar = document.querySelector('.sidebar');
 
@@ -239,6 +242,52 @@ const makeDomObject = (() => {
 
 //     return true;
 // }
+
+function checkForm (event) {
+    const currForm = event.target.id
+    if (currForm === 'nForm') {
+        const titleField = document.querySelector('#title')
+        const descField = document.querySelector('#desc')
+        // const dateField = document.querySelector('#date')
+
+        if (!titleField.validity.valid) {
+            showError.clearErrors()
+            showError.titleError(titleField)
+            return false
+        } else if (!descField.validity.valid) {
+            showError.clearErrors()
+            showError.descError(descField)
+            return false
+        }
+        showError.clearErrors()
+        return true
+        // else if (!descField.validity.valid) showError.descError(descField)
+        // else if (invalidDate(dateField)) showError.dateError(dateField)
+    }
+}
+
+const showError = (() => {
+    const titleErr = document.querySelector('.titleError')
+    const descErr = document.querySelector('.descError')
+    // const dateErr = document.querySelector('.dateError')
+    const emptyErr = '*This field must be filled'
+    const titleError = (element) => {
+        if(element.validity.valueMissing) {
+            titleErr.innerText = emptyErr
+            return
+        }
+    }
+    const descError = (element) => {
+        if(element.validity.valueMissing) {
+            descErr.innerText = emptyErr
+            return
+        }
+    }
+    const clearErrors = () => {
+        titleErr.innerText = '';
+    }
+    return {titleError, descError, clearErrors}
+})();
 
 function capitalized (value) {
     let str = value;

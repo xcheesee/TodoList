@@ -47,6 +47,14 @@
     align-items: center;
 }
 
+label {
+    grid-column: 1;
+}
+
+#title, #desc, #date, select, [type="reset"] {
+    grid-column: -1;
+}
+
 .cardContainer {
     grid-area: card;
 }
@@ -56,5 +64,10 @@
 }
 
 .formTitle{
-    grid-column: 1 / -1;
+    grid-column: 1 / 4;
+}
+
+.error {
+    color: red;
+    grid-column: 1 / 4;
 }
