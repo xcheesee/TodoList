@@ -21,7 +21,7 @@
         <div class="cardContainer"></div>
     </div>
     <div class="nFormWrapper">
-        <form action="#" id="nForm" onsubmit="return false" novalidate>
+        <form action="#" id="nForm" onsubmit="return false">
             <h2 class="formTitle">Add Note</h2>
             <label for="title">Title</label>
             <input type="text" name="title" id="title" autocomplete="off" required>
@@ -30,7 +30,7 @@
             <input type="text" name="desc" id="desc" autocomplete="off" required>
             <span class="descError error"></span>
             <label for="date">Due Date</label>
-            <input type="text" name="date" id="date" autocomplete="off">
+            <input type="text" name="date" id="date" autocomplete="off" required>
             <span class="dateError error"></span>
             <label for="prio">Priority</label>
             <select name="prio" id="prio">
@@ -50,7 +50,7 @@
         <form action="#" id="pForm">
             <h2 class="formTitle">Create New Project</h2>
             <label for="name">Name</label>
-            <input type="text" name="name" id="name">
+            <input type="text" name="name" id="name" required>
             <button type="submit">Submit</button>
             <button type="reset">Clear</button>
         </form>

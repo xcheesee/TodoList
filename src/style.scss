@@ -54,6 +54,10 @@ label {
 #title, #desc, #date, select, [type="reset"] {
     grid-column: -1;
 }
+[for="title"]::before, [for="desc"]::before, [for="date"]::before {
+    content: "*";
+    color: red;
+}
 
 .cardContainer {
     grid-area: card;

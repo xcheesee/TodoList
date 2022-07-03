@@ -7,8 +7,8 @@
 // DRY - DONT REPEAT YOURSELF
 
 import './style.css';
-// import isValid from 'date-fns/isValid';
-// import isPast from 'date-fns/isPast';
+import isValid from 'date-fns/isValid';
+import isPast from 'date-fns/isPast';
 import Datepicker from 'vanillajs-datepicker/Datepicker';
 // import { eachMonthOfInterval } from 'date-fns';
 // import { ka } from 'date-fns/locale';
@@ -50,8 +50,6 @@ function addNote (event) {
     event.preventDefault();
     let data = Object.fromEntries(new FormData(event.target));
 
-    if(!checkForm(event)) return
-
     pageData.addNote(data)
       .then(makeDomObject.updateProjTabEle);
 
@@ -70,7 +68,6 @@ function addProject (event) {
         event.target.reset();
         return;
     }
-    // checkForm(event)
 
     const projSidebar = document.querySelector('.sidebar');
 
@@ -214,80 +211,125 @@ const makeDomObject = (() => {
     return {makeNote, makeOptions, makeProjTabEle, updateProjTabEle, initSidebar};
 })();
 
-// function isFormValid ({title, desc, dueD}) {
-//     let [day, month, year] = dueD.split('/');
-//     month--;
-//     //23:59:59 to be able to define note for same day
-//     let fDate = new Date(year, month , day, 23, 59, 59);
+function isPastDate (date) {
+    let [day, month, year] = date.split('/');
+    month--;
+    //23:59:59 to be able to define note for same day
+    let fDate = new Date(year, month , day, 23, 59, 59);
 
-//     if(title === '') {
-//         let title = document.querySelector('#title');
-//         title.classList.add('failTitle');
-//         return false;
-//     } else if (desc === '') {
-//         let desc = document.querySelector('#desc');
-//         desc.classList.add('failDesc');
-//         return false;
-//     } else if (!isValid(fDate)) {
-//         let d = document.querySelector('#dueD');
-//         d.classList.remove('pastDate');
-//         d.classList.add('blankDate');
-//         return false;
-//     } else if (isPast(fDate)) {
-//         let d = document.querySelector('#dueD');
-//         d.classList.remove('blankDate');
-//         d.classList.add('pastDate');
-//         return false;
-//     }
-
-//     return true;
-// }
-
-function checkForm (event) {
-    const currForm = event.target.id
-    if (currForm === 'nForm') {
-        const titleField = document.querySelector('#title')
-        const descField = document.querySelector('#desc')
-        // const dateField = document.querySelector('#date')
-
-        if (!titleField.validity.valid) {
-            showError.clearErrors()
-            showError.titleError(titleField)
-            return false
-        } else if (!descField.validity.valid) {
-            showError.clearErrors()
-            showError.descError(descField)
-            return false
-        }
-        showError.clearErrors()
-        return true
-        // else if (!descField.validity.valid) showError.descError(descField)
-        // else if (invalidDate(dateField)) showError.dateError(dateField)
+    if (isPast(fDate)) {
+        return true;
     }
+    return false;
 }
 
-const showError = (() => {
-    const titleErr = document.querySelector('.titleError')
-    const descErr = document.querySelector('.descError')
-    // const dateErr = document.querySelector('.dateError')
-    const emptyErr = '*This field must be filled'
-    const titleError = (element) => {
-        if(element.validity.valueMissing) {
-            titleErr.innerText = emptyErr
-            return
+function isValidDate (date) {
+    let [day, month, year] = date.split('/');
+    month--;
+    //23:59:59 to be able to define note for same day
+    let fDate = new Date(year, month , day, 23, 59, 59);
+
+    if (isValid(fDate)) {
+        return true;
+    }
+    return false;
+}
+
+// eslint-disable-next-line no-unused-vars
+const handleFormErrors = (() => {
+    const nTitleField = document.querySelector('#title');
+    const nDescField = document.querySelector('#desc');
+    const nDateField = document.querySelector('#date');
+    const pNameField = document.querySelector('#name');
+
+    nTitleField.addEventListener('blur', () => {
+        if (!nTitleField.validity.valid) {
+            nTitleField.reportValidity();
+        } else {
+            nTitleField.setCustomValidity('')
+            nTitleField.reportValidity();
         }
-    }
-    const descError = (element) => {
-        if(element.validity.valueMissing) {
-            descErr.innerText = emptyErr
-            return
+    })
+
+    nDescField.addEventListener('blur', () => {
+        if (!nDescField.validity.valid) {
+            nDescField.reportValidity();
+        } else {
+            nDescField.setCustomValidity('')
+            nDescField.reportValidity();
         }
-    }
-    const clearErrors = () => {
-        titleErr.innerText = '';
-    }
-    return {titleError, descError, clearErrors}
+    })
+
+    nDateField.addEventListener('blur', () => {
+        if (isPastDate(nDateField.value)) {
+            nDateField.setCustomValidity('Must not be past date!')
+            nDateField.reportValidity();
+        } else if (!isValidDate(nDateField.value) || nDateField.value === '') {
+            nDateField.setCustomValidity('Please fill out this field.')
+            nDateField.reportValidity();
+        } else {
+            nDateField.setCustomValidity('')
+            nDateField.reportValidity();
+        }
+    })
+
+    pNameField.addEventListener('blur', () => {
+        if(!pNameField.validity.valid) {
+            pNameField.reportValidity();
+        }
+    })
 })();
+
+// function checkForm (event) {
+//     const currForm = event.target.id
+//     if (currForm === 'nForm') {
+//         const titleField = document.querySelector('#title')
+//         const descField = document.querySelector('#desc')
+//         const dateField = document.querySelector('#date')
+//         showError.clearErrors();
+
+//         if(titleField.validity.valid && descField.validity.valid && !isPastDate(dateField.value) && isValidDate(dateField.value)) {
+//             showError.clearErrors();
+//             return true
+//         }
+
+//         if (!titleField.validity.valid) {
+//             showError.titleError(titleField);
+//         }
+//         if (!descField.validity.valid) {
+//             showError.descError(descField);
+//         }
+//         if (isPastDate(dateField.value)) {
+//             showError.pastDate();
+//         }
+//         if (!isValidDate(dateField.value)) {
+//             showError.noDate();
+//         }
+//         return false
+//     }
+// }
+
+// const showError = (() => {
+//     const titleErr = document.querySelector('.titleError')
+//     const descErr = document.querySelector('.descError')
+//     const dateErr = document.querySelector('.dateError')
+//     const emptyErr = '*This field must be filled'
+//     const titleError = (element) => {
+//         if(element.validity.valueMissing) {
+//             titleErr.innerText = element.validationMessage
+//             return
+//         }
+//     }
+//     const descError = (element) => {
+//         if(element.validity.valueMissing) {
+//             return descErr.innerText = emptyErr
+//         }
+//     }
+//     const pastDate = () =>  dateErr.innerText = '*Must not be past';
+//     const noDate = () => dateErr.innerText = emptyErr;
+
+//     return {titleError, descError, pastDate, noDate}
+// })();
 
 function capitalized (value) {
     let str = value;
